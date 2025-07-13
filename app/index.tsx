@@ -46,7 +46,11 @@ export default function Index() {
           resizeMode="cover"
         />
       </View>
-     
+      <View style={styles.triangle} />
+      <View style={styles.pill}>
+        <MaterialIcons name="person" size={24} color="white" />
+        <Text style={styles.pillText}>105841111822</Text>
+      </View>
       <View style={styles.textContainer}>
         <Text style={styles.redText}>ARI AHMAD DAHRIL</Text>
         <Text style={styles.whiteText}>105841111822</Text>
