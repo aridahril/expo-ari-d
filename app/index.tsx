@@ -29,55 +29,61 @@ function createAnimatedImageData() {
 export default function ProfileGalleryScreen() {
   const [images, setImages] = useState(createAnimatedImageData());
 
+  const chunkArray = (arr: any[], size: number) => {
+    const chunks = [];
+    for (let i = 0; i < arr.length; i += size) {
+      chunks.push(arr.slice(i, i + size));
+    }
+    return chunks;
+  };
+
   const onImagePress = (imageId: number) => {
-    setImages(current =>
-      current.map(img => {
-        if (img.id === imageId) {
-          const newScale = Math.min(img.scale * 1.2, 2);
+    const newImages = [...images];
+    const index = newImages.findIndex(img => img.id === imageId);
+    const img = newImages[index];
 
-          // Flip animation
-          Animated.timing(img.flipAnim, {
-            toValue: img.flipped ? 0 : 180,
-            duration: 400,
-            useNativeDriver: true,
-          }).start();
+    const newScale = Math.min(img.scale * 1.2, 2);
 
-          // Scale animation
-          Animated.timing(img.scaleAnim, {
-            toValue: newScale,
-            duration: 400,
-            useNativeDriver: true,
-          }).start();
+    // Flip animation
+    Animated.timing(img.flipAnim, {
+      toValue: img.flipped ? 0 : 180,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
 
-          // Auto revert after 3 seconds
-          setTimeout(() => {
-            Animated.parallel([
-              Animated.timing(img.flipAnim, {
-                toValue: 0,
-                duration: 400,
-                useNativeDriver: true,
-              }),
-              Animated.timing(img.scaleAnim, {
-                toValue: 1,
-                duration: 400,
-                useNativeDriver: true,
-              }),
-            ]).start();
+    // Scale animation
+    Animated.timing(img.scaleAnim, {
+      toValue: newScale,
+      duration: 400,
+      useNativeDriver: true,
+    }).start();
 
-            setImages(currentImgs =>
-              currentImgs.map(i =>
-                i.id === imageId
-                  ? { ...i, flipped: false, scale: 1 }
-                  : i
-              )
-            );
-          }, 3000);
+    // Update state flipped and scale
+    newImages[index] = { ...img, flipped: !img.flipped, scale: newScale };
+    setImages(newImages);
 
-          return { ...img, flipped: !img.flipped, scale: newScale };
-        }
-        return img;
-      })
-    );
+    // Auto revert after 3 seconds
+    setTimeout(() => {
+      Animated.parallel([
+        Animated.timing(img.flipAnim, {
+          toValue: 0,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+        Animated.timing(img.scaleAnim, {
+          toValue: 1,
+          duration: 400,
+          useNativeDriver: true,
+        }),
+      ]).start();
+
+      // Reset state after animation
+      setImages(prev =>
+        prev.map(i =>
+          i.id === imageId ? { ...i, flipped: false, scale: 1 } : i
+        )
+      );
+    }, 3000);
   };
 
   const resetAll = () => {
@@ -107,7 +113,6 @@ export default function ProfileGalleryScreen() {
         <Image
           source={{ uri: "https://img.icons8.com/m_rounded/512/chatgpt.png" }}
           style={styles.headerImage}
-          resizeMode="cover"
         />
       </View>
 
@@ -123,37 +128,42 @@ export default function ProfileGalleryScreen() {
         <Text style={styles.nimText}>105841113522</Text>
       </View>
 
-      <View style={styles.circleDecoration}></View>
+      <View style={styles.circleDecoration} />
 
+      {/* 3x3 Grid Explicit */}
       <View style={styles.imageGrid}>
-        {images.map(img => {
-          const rotateY = img.flipAnim.interpolate({
-            inputRange: [0, 180],
-            outputRange: ['0deg', '180deg'],
-          });
+        {chunkArray(images, 3).map((row, rowIndex) => (
+          <View style={styles.imageRow} key={rowIndex}>
+            {row.map(img => {
+              const rotateY = img.flipAnim.interpolate({
+                inputRange: [0, 180],
+                outputRange: ['0deg', '180deg'],
+              });
 
-          return (
-            <TouchableOpacity
-              key={img.id}
-              onPress={() => onImagePress(img.id)}
-              style={styles.imageCell}
-            >
-              <Animated.Image
-                source={{ uri: img.flipped ? img.altUrl : img.mainUrl }}
-                style={[
-                  styles.cellImage,
-                  {
-                    transform: [
-                      { scale: img.scaleAnim },
-                      { rotateY: rotateY },
-                    ],
-                  },
-                ]}
-                resizeMode="cover"
-              />
-            </TouchableOpacity>
-          );
-        })}
+              return (
+                <TouchableOpacity
+                  key={img.id}
+                  onPress={() => onImagePress(img.id)}
+                  style={styles.imageCell}
+                >
+                  <Animated.Image
+                    source={{ uri: img.flipped ? img.altUrl : img.mainUrl }}
+                    style={[
+                      styles.cellImage,
+                      {
+                        transform: [
+                          { scale: img.scaleAnim },
+                          { rotateY: rotateY },
+                        ],
+                      },
+                    ]}
+                    resizeMode="cover"
+                  />
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        ))}
       </View>
 
       <View style={{ marginTop: 30 }}>
@@ -166,7 +176,6 @@ export default function ProfileGalleryScreen() {
 const styles = StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
-    justifyContent: "flex-start",
     alignItems: "center",
     backgroundColor: "#fff",
     paddingVertical: 60,
@@ -179,7 +188,7 @@ const styles = StyleSheet.create({
     overflow: "hidden",
     marginBottom: 20,
     justifyContent: "center",
-    alignItems: "center"
+    alignItems: "center",
   },
   headerImage: {
     width: "100%",
@@ -199,17 +208,11 @@ const styles = StyleSheet.create({
   idPill: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "center",
     backgroundColor: "#4a90e2",
     borderRadius: 50,
     paddingHorizontal: 24,
     paddingVertical: 12,
     marginBottom: 20,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
   },
   idText: {
     color: "white",
@@ -228,7 +231,6 @@ const styles = StyleSheet.create({
     color: "red",
     fontSize: 25,
     fontWeight: "bold",
-    textAlign: "center",
   },
   nimText: {
     color: "white",
@@ -239,15 +241,16 @@ const styles = StyleSheet.create({
     height: 50,
     backgroundColor: "blue",
     borderRadius: 100,
-    marginTop: 10
+    marginTop: 10,
   },
   imageGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
     width: '100%',
     maxWidth: 330,
     marginTop: 20,
+  },
+  imageRow: {
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   imageCell: {
     width: 100,
