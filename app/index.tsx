@@ -1,69 +1,266 @@
-import { Ionicons } from "@expo/vector-icons";
-import { StyleSheet, Text, View } from "react-native";
+import React, { useState } from 'react';
+import {
+  Text, View, StyleSheet, Image, TouchableOpacity, ScrollView, Animated, Button,
+} from "react-native";
+import { MaterialIcons } from '@expo/vector-icons';
 
-export default function Index() {
+const rawImages = [
+  { id: 1, mainUrl: 'https://picsum.photos/id/101/200', altUrl: 'https://picsum.photos/id/102/200' },
+  { id: 2, mainUrl: 'https://picsum.photos/id/103/200', altUrl: 'https://picsum.photos/id/104/200' },
+  { id: 3, mainUrl: 'https://picsum.photos/id/105/200', altUrl: 'https://picsum.photos/id/106/200' },
+  { id: 4, mainUrl: 'https://picsum.photos/id/107/200', altUrl: 'https://picsum.photos/id/108/200' },
+  { id: 5, mainUrl: 'https://picsum.photos/id/109/200', altUrl: 'https://picsum.photos/id/110/200' },
+  { id: 6, mainUrl: 'https://picsum.photos/id/111/200', altUrl: 'https://picsum.photos/id/112/200' },
+  { id: 7, mainUrl: 'https://picsum.photos/id/113/200', altUrl: 'https://picsum.photos/id/114/200' },
+  { id: 8, mainUrl: 'https://picsum.photos/id/115/200', altUrl: 'https://picsum.photos/id/116/200' },
+  { id: 9, mainUrl: 'https://picsum.photos/id/117/200', altUrl: 'https://picsum.photos/id/118/200' },
+];
+
+function createAnimatedImageData() {
+  return rawImages.map(image => ({
+    ...image,
+    flipped: false,
+    scale: 1,
+    flipAnim: new Animated.Value(0),
+    scaleAnim: new Animated.Value(1),
+  }));
+}
+
+export default function ProfileGalleryScreen() {
+  const [images, setImages] = useState(createAnimatedImageData());
+
+  const onImagePress = (imageId: number) => {
+    setImages(current =>
+      current.map(img => {
+        if (img.id === imageId) {
+          const newScale = Math.min(img.scale * 1.2, 2);
+
+          // Flip animation
+          Animated.timing(img.flipAnim, {
+            toValue: img.flipped ? 0 : 180,
+            duration: 400,
+            useNativeDriver: true,
+          }).start();
+
+          // Scale animation
+          Animated.timing(img.scaleAnim, {
+            toValue: newScale,
+            duration: 400,
+            useNativeDriver: true,
+          }).start();
+
+          // Auto revert after 3 seconds
+          setTimeout(() => {
+            Animated.parallel([
+              Animated.timing(img.flipAnim, {
+                toValue: 0,
+                duration: 400,
+                useNativeDriver: true,
+              }),
+              Animated.timing(img.scaleAnim, {
+                toValue: 1,
+                duration: 400,
+                useNativeDriver: true,
+              }),
+            ]).start();
+
+            setImages(currentImgs =>
+              currentImgs.map(i =>
+                i.id === imageId
+                  ? { ...i, flipped: false, scale: 1 }
+                  : i
+              )
+            );
+          }, 3000);
+
+          return { ...img, flipped: !img.flipped, scale: newScale };
+        }
+        return img;
+      })
+    );
+  };
+
+  const resetAll = () => {
+    setImages(prev =>
+      prev.map(img => {
+        Animated.parallel([
+          Animated.timing(img.flipAnim, {
+            toValue: 0,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+          Animated.timing(img.scaleAnim, {
+            toValue: 1,
+            duration: 400,
+            useNativeDriver: true,
+          }),
+        ]).start();
+
+        return { ...img, flipped: false, scale: 1 };
+      })
+    );
+  };
+
   return (
-    <View style={styles.wrapper}>
-      {/* Kotak nama (persegi panjang) */}
-      <View style={styles.nameBox}>
-        <Text style={styles.name}>Afil Anugrah</Text>
+    <ScrollView contentContainerStyle={styles.scrollContent}>
+      <View style={styles.headerBox}>
+        <Image
+          source={{ uri: "https://img.icons8.com/m_rounded/512/chatgpt.png" }}
+          style={styles.headerImage}
+          resizeMode="cover"
+        />
       </View>
 
-      {/* Bentuk segitiga */}
-      <View style={styles.triangleShape} />
+      <View style={styles.triangleIndicator} />
 
-      {/* Bentuk kapsul berisi stambuk dan ikon */}
-      <View style={styles.capsule}>
-        <Ionicons name="person" size={20} color="#fff" style={{ marginRight: 8 }} />
+      <View style={styles.idPill}>
+        <MaterialIcons name="person" size={24} color="white" />
         <Text style={styles.idText}>105841113522</Text>
       </View>
-    </View>
+
+      <View style={styles.nameBox}>
+        <Text style={styles.nameText}>AFIL ANUGRAH</Text>
+        <Text style={styles.nimText}>105841113522</Text>
+      </View>
+
+      <View style={styles.circleDecoration}></View>
+
+      <View style={styles.imageGrid}>
+        {images.map(img => {
+          const rotateY = img.flipAnim.interpolate({
+            inputRange: [0, 180],
+            outputRange: ['0deg', '180deg'],
+          });
+
+          return (
+            <TouchableOpacity
+              key={img.id}
+              onPress={() => onImagePress(img.id)}
+              style={styles.imageCell}
+            >
+              <Animated.Image
+                source={{ uri: img.flipped ? img.altUrl : img.mainUrl }}
+                style={[
+                  styles.cellImage,
+                  {
+                    transform: [
+                      { scale: img.scaleAnim },
+                      { rotateY: rotateY },
+                    ],
+                  },
+                ]}
+                resizeMode="cover"
+              />
+            </TouchableOpacity>
+          );
+        })}
+      </View>
+
+      <View style={{ marginTop: 30 }}>
+        <Button title="Reset Semua Gambar" onPress={resetAll} color="#d9534f" />
+      </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    justifyContent: "center",
+  scrollContent: {
+    flexGrow: 1,
+    justifyContent: "flex-start",
     alignItems: "center",
-    gap: 25,
-    backgroundColor: "#eaeaea", // ubah warna latar
+    backgroundColor: "#fff",
+    paddingVertical: 60,
   },
-  nameBox: {
-    width: 260,
-    height: 95,
-    backgroundColor: "#000",
-    justifyContent: "center",
-    alignItems: "center",
+  headerBox: {
+    width: 220,
+    height: 110,
+    backgroundColor: "#eee",
     borderRadius: 12,
-    padding: 12,
+    overflow: "hidden",
+    marginBottom: 20,
+    justifyContent: "center",
+    alignItems: "center"
   },
-  name: {
-    color: "#ff4444", // ganti warna merah agar sedikit berbeda
-    fontSize: 23,
-    fontWeight: "600",
+  headerImage: {
+    width: "100%",
+    height: "100%",
   },
-  triangleShape: {
+  triangleIndicator: {
     width: 0,
     height: 0,
-    borderLeftWidth: 28,
-    borderRightWidth: 28,
-    borderBottomWidth: 55,
+    borderLeftWidth: 40,
+    borderRightWidth: 40,
+    borderBottomWidth: 70,
     borderLeftColor: "transparent",
     borderRightColor: "transparent",
-    borderBottomColor: "#ffa500",
+    borderBottomColor: "orange",
+    marginBottom: 20,
   },
-  capsule: {
+  idPill: {
     flexDirection: "row",
     alignItems: "center",
-    backgroundColor: "#5c00cc",
+    justifyContent: "center",
+    backgroundColor: "#4a90e2",
+    borderRadius: 50,
     paddingHorizontal: 24,
     paddingVertical: 12,
-    borderRadius: 60,
+    marginBottom: 20,
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   idText: {
     color: "white",
-    fontSize: 15,
-    fontWeight: "600",
+    fontWeight: "bold",
+    fontSize: 18,
+    marginLeft: 10,
   },
+  nameBox: {
+    backgroundColor: "black",
+    borderRadius: 10,
+    marginTop: 20,
+    padding: 10,
+    alignItems: 'center',
+  },
+  nameText: {
+    color: "red",
+    fontSize: 25,
+    fontWeight: "bold",
+    textAlign: "center",
+  },
+  nimText: {
+    color: "white",
+    fontWeight: "bold",
+  },
+  circleDecoration: {
+    width: 50,
+    height: 50,
+    backgroundColor: "blue",
+    borderRadius: 100,
+    marginTop: 10
+  },
+  imageGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    width: '100%',
+    maxWidth: 330,
+    marginTop: 20,
+  },
+  imageCell: {
+    width: 100,
+    height: 100,
+    margin: 5,
+    backgroundColor: '#e0e0e0',
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  cellImage: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 8,
+    backfaceVisibility: 'hidden',
+  }
 });

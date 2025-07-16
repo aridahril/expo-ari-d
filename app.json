@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "expo-Abdullah-D",
-    "slug": "expo-Abdullah-D",
+    "name": "expo-Ari-D",
+    "slug": "expo-Ari-D",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "expoabdullahd",
+    "scheme": "expoarid",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
