@@ -17,7 +17,6 @@ const initialImageGridData = [
 export default function Index() {
   const [imageGridData, setImageGridData] = useState(initialImageGridData);
 
-  // Handler saat gambar ditekan
   const onImagePress = (imageId: number) => {
     setImageGridData(currentGrid =>
       currentGrid.map(image => {
@@ -36,7 +35,6 @@ export default function Index() {
 
   return (
     <ScrollView contentContainerStyle={styles.container}>
-      {/* Komponen header */}
       <View style={styles.headerBox}>
         <Image
           source={{ uri: "https://img.icons8.com/m_rounded/512/chatgpt.png" }}
@@ -55,22 +53,19 @@ export default function Index() {
       </View>
       <View style={styles.blueDot}></View>
 
-      {/* Grid gambar 3x3 */}
       <View style={styles.gridWrapper}>
         {imageGridData.map(image => (
           <TouchableOpacity
             key={image.id}
             onPress={() => onImagePress(image.id)}
             style={styles.gridItem}
+            activeOpacity={0.8}
           >
             <Image
               source={{ uri: image.flipped ? image.backImage : image.frontImage }}
               style={[
                 styles.gridImage,
-                {
-                  transform: [{ scale: image.scaleValue }],
-                  borderRadius: 8,
-                }
+                { transform: [{ scale: image.scaleValue }] }
               ]}
               resizeMode="cover"
             />
@@ -174,9 +169,11 @@ const styles = StyleSheet.create({
     backgroundColor: '#e0e0e0',
     borderRadius: 8,
     overflow: 'hidden',
+    alignItems: 'center',     // added
+    justifyContent: 'center', // added
   },
   gridImage: {
-    width: '100%',
-    height: '100%',
+    width: 100,
+    height: 100,
   }
 });
