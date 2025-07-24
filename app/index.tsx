@@ -1,184 +1,73 @@
-import React, { useState } from 'react';
-import { Text, View, StyleSheet, Image, TouchableOpacity, ScrollView } from "react-native";
-import { MaterialIcons } from '@expo/vector-icons';
+import React from "react";
+import { Text, ScrollView } from "react-native";
 
-const initialGridImages = [
-  { id: 1, mainSrc: 'https://picsum.photos/id/101/200', altSrc: 'https://picsum.photos/id/102/200', isFlipped: false, scale: 1 },
-  { id: 2, mainSrc: 'https://picsum.photos/id/103/200', altSrc: 'https://picsum.photos/id/104/200', isFlipped: false, scale: 1 },
-  { id: 3, mainSrc: 'https://picsum.photos/id/105/200', altSrc: 'https://picsum.photos/id/106/200', isFlipped: false, scale: 1 },
-  { id: 4, mainSrc: 'https://picsum.photos/id/107/200', altSrc: 'https://picsum.photos/id/108/200', isFlipped: false, scale: 1 },
-  { id: 5, mainSrc: 'https://picsum.photos/id/109/200', altSrc: 'https://picsum.photos/id/110/200', isFlipped: false, scale: 1 },
-  { id: 6, mainSrc: 'https://picsum.photos/id/111/200', altSrc: 'https://picsum.photos/id/112/200', isFlipped: false, scale: 1 },
-  { id: 7, mainSrc: 'https://picsum.photos/id/113/200', altSrc: 'https://picsum.photos/id/114/200', isFlipped: false, scale: 1 },
-  { id: 8, mainSrc: 'https://picsum.photos/id/115/200', altSrc: 'https://picsum.photos/id/116/200', isFlipped: false, scale: 1 },
-  { id: 9, mainSrc: 'https://picsum.photos/id/117/200', altSrc: 'https://picsum.photos/id/118/200', isFlipped: false, scale: 1 },
+const fontFamilies = [
+  "ubuntu-regular",
+  "roboto-mediumitalic",
+  "opensans-extabolditalic",
+  "bitcount-medium",
+  "inter-light",
+  "bitcount-variable",
+  "opensans-italic-variable",
+  "opensans-variable",
+  "roboto-italic-variabel",
+  "roboto-variabel",
+];
+
+const nama = [
+  "Ari Ahmad Dahril",
+  "Farhan Alif",
+  "Ayesha Kamila",
+  "Rafi Pranata",
+  "Nadya Safira",
+  "Dimas Arjuna",
+  "Laras Ayu",
+  "Rehan Saputra",
+  "Zahira Lestari",
+  "Rayhan Mahesa",
 ];
 
 
-export default function Index() {
-  const [gridImages, setGridImages] = useState(initialGridImages);
+const STAMBUK_INDEX = 2;
 
-  // Fungsi untuk menangani klik gambar
-  const handleImagePress = (imageId: number) => {
-    setGridImages(currentImages =>
-      currentImages.map(image => {
-        if (image.id === imageId) {
-          // Hitung skala baru dengan batasan maksimal 2x
-          const newScale = Math.min(image.scale * 1.2, 2);
-          return {
-            ...image,
-            isFlipped: !image.isFlipped, // Toggle gambar utama/alternatif
-            scale: newScale, // Terapkan scaling
-          };
-        }
-        return image;
-      })
-    );
-  };
+const generateStambuk = (index: number) => {
+  return `10584111${String(index).padStart(2, "0")}22`;
+};
+
+function getDisplayNama(index: number) {
+  const total = nama.length;
+  const result = [];
+
+  for (let i = 5; i > 0; i--) {
+    const idx = (index - i + total) % total;
+    result.push({ name: nama[idx], stambuk: generateStambuk(idx) });
+  }
+
+  for (let i = 1; i <= 5; i++) {
+    const idx = (index + i) % total;
+    result.push({ name: nama[idx], stambuk: generateStambuk(idx) });
+  }
+
+  return result;
+}
+
+export default function Index() {
+  const displayData = getDisplayNama(STAMBUK_INDEX);
 
   return (
-    <ScrollView contentContainerStyle={styles.container}>
-      {/* Bagian komponen lama tetap sama */}
-      <View style={styles.rectangle}>
-        <Image
-          source={{ uri: "https://img.icons8.com/m_rounded/512/chatgpt.png" }}
-          style={styles.image}
-          resizeMode="cover"
-        />
-      </View>
-      <View style={styles.triangle} />
-      <View style={styles.pill}>
-        <MaterialIcons name="person" size={24} color="white" />
-        <Text style={styles.pillText}>105841111822</Text>
-      </View>
-      <View style={styles.textContainer}>
-        <Text style={styles.redText}>ARI AHMAD DAHRIL</Text>
-        <Text style={styles.whiteText}>105841111822</Text>
-      </View>
-      <View style={styles.blueCircle}></View>
-
-      {/* Grid gambar 3x3 */}
-      <View style={styles.gridContainer}>
-        {gridImages.map(image => (
-          <TouchableOpacity
-            key={image.id}
-            onPress={() => handleImagePress(image.id)}
-            style={styles.gridCell}
-          >
-            <Image
-              source={{ uri: image.isFlipped ? image.altSrc : image.mainSrc }}
-              style={[
-                styles.gridImage,
-                { 
-                  transform: [{ scale: image.scale }],
-                  borderRadius: 8, // Untuk konsistensi dengan sel
-                }
-              ]}
-              resizeMode="cover"
-            />
-          </TouchableOpacity>
-        ))}
-      </View>
+    <ScrollView contentContainerStyle={{ padding: 20 }}>
+      {displayData.map((item, index) => (
+        <Text
+          key={index}
+          style={{
+            fontFamily: fontFamilies[index],
+            fontSize: 24,
+            marginVertical: 8,
+          }}
+        >
+          {index + 1}. {item.name} {item.stambuk}
+        </Text>
+      ))}
     </ScrollView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    justifyContent: "flex-start",
-    alignItems: "center",
-    backgroundColor: "#fff",
-    paddingVertical: 60,
-  },
-  rectangle: {
-    width: 220,
-    height: 110,
-    backgroundColor: "#eee",
-    borderRadius: 12,
-    overflow: "hidden",
-    marginBottom: 20,
-    justifyContent: "center",
-    alignItems: "center"
-  },
-  image: {
-    width: "100%",
-    height: "100%",
-  },
-  triangle: {
-    width: 0,
-    height: 0,
-    borderLeftWidth: 40,
-    borderRightWidth: 40,
-    borderBottomWidth: 70,
-    borderLeftColor: "transparent",
-    borderRightColor: "transparent",
-    borderBottomColor: "orange",
-    marginBottom: 20,
-  },
-  pill: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: "#4a90e2",
-    borderRadius: 50,
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    marginBottom: 20,
-    elevation: 4,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.2,
-    shadowRadius: 4,
-  },
-  pillText: {
-    color: "white",
-    fontWeight: "bold",
-    fontSize: 18,
-    marginLeft: 10,
-  },
-  textContainer: {
-    backgroundColor: "black",
-    borderRadius: 10,
-    marginTop: 20,
-    padding: 10,
-    alignItems: 'center',
-  },
-  redText: {
-    color: "red",
-    fontSize: 25,
-    fontWeight: "bold",
-    textAlign: "center",
-  },
-  whiteText: {
-    color: "white",
-    fontWeight: "bold",
-  },
-  blueCircle: {
-    width: 50,
-    height: 50,
-    backgroundColor: "blue",
-    borderRadius: 100,
-    marginTop: 10
-  },
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    width: '100%',
-    maxWidth: 330, // Maksimal 3 kolom (100*3 + margin)
-    marginTop: 20,
-  },
-  gridCell: {
-    width: 100,
-    height: 100,
-    margin: 5,
-    backgroundColor: '#e0e0e0',
-    borderRadius: 8,
-    overflow: 'hidden',
-  },
-  gridImage: {
-    width: '100%',
-    height: '100%',
-  }
-});

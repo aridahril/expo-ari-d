@@ -1,11 +1,11 @@
 {
   "expo": {
-    "name": "expo-Ari-D",
-    "slug": "expo-Ari-D",
+    "name": "expo-Syahrul-D",
+    "slug": "expo-Syahrul-D",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "expoarid",
+    "scheme": "exposyahruld",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
