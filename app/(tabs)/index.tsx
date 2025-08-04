@@ -3,7 +3,7 @@ import { View, Text, Image, StyleSheet, ScrollView, TouchableOpacity } from "rea
 
 export default function HomeScreen() {
   const images = [
-    require("../../assets/images/unismuhmakassar.jpeg"),
+    require("../../assets/images/unismuhmakassar.jpg"),
     require("../../assets/images/unismuh2.jpg"),
     require("../../assets/images/unismuh3.jpg"),
   ];
